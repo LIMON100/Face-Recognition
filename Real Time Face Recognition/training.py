@@ -1,48 +1,64 @@
+# -*- coding: utf-8 -*-
 """
-Created on Thu Apr  8 13:06:46 2021
+Created on Tue Apr 13 11:08:52 2021
 
 @author: limon
-"""
+""" 
 
 
-import cv2
-import numpy as np
-from PIL import Image
 import os
+from PIL import Image
+import numpy as np
+import cv2
+import pickle
 
-# Path for face image database
-path = 'dataset'
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+image_dir = os.path.join(BASE_DIR, 'dataset')
 
+
+face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+#face_cascade = cv2.CascadeClassifier("cascades/data/haarcascade_frontalface_alt2.xml")
 recognizer = cv2.face.LBPHFaceRecognizer_create()
-detector = cv2.CascadeClassifier("haarcascade_frontalface_default.xml");
 
-# function to get the images and label data
-def getImagesAndLabels(path):
+current_id = 0
+label_ids = {}
+y_labels = []
+x_train = []
 
-    imagePaths = [os.path.join(path,f) for f in os.listdir(path)]     
-    faceSamples=[]
-    ids = []
+ 
+for root, dirs, files in os.walk(image_dir):
+    
+	for file in files:
+        
+		if file.endswith("jpg") or file.endswith("jpeg") or file.endswith("png") or file.endswith("jfif"):
+            
+			path = os.path.join(root, file)
+			label = os.path.basename(root).replace(" ", "-").lower()
+			#print(label, path)
+			if not label in label_ids:
+				label_ids[label] = current_id
+				current_id += 1
+                
+			id_ = label_ids[label]
+			#print(label_ids)
+			#y_labels.append(label) # some number
+			#x_train.append(path) # verify this image, turn into a NUMPY arrray, GRAY
+			pil_image = Image.open(path).convert("L") # grayscale
+			size = (550, 550)
+			final_image = pil_image.resize(size, Image.ANTIALIAS)
+			image_array = np.array(final_image, "uint8")
+			#print(image_array)
+			faces = face_cascade.detectMultiScale(image_array)
 
-    for imagePath in imagePaths:
+			for (x,y,w,h) in faces:
+				roi = image_array[y:y+h, x:x+w]
+				x_train.append(roi)
+				y_labels.append(id_)
 
-        PIL_img = Image.open(imagePath).convert('L') # convert it to grayscale
-        img_numpy = np.array(PIL_img,'uint8')
 
-        id = int(os.path.split(imagePath)[-1].split(".")[1])
-        faces = detector.detectMultiScale(img_numpy)
 
-        for (x,y,w,h) in faces:
-            faceSamples.append(img_numpy[y:y+h,x:x+w])
-            ids.append(id)
+with open("pickles/face-labels.pickle", 'wb') as f:
+	pickle.dump(label_ids, f)
 
-    return faceSamples,ids
-
-print ("\n [INFO] Training faces. It will take a few seconds. Wait ...")
-faces,ids = getImagesAndLabels(path)
-recognizer.train(faces, np.array(ids))
-
-# Save the model into trainer/trainer.yml
-recognizer.write('trainer/trainer.yml') # recognizer.save() worked on Mac, but not on Pi
-
-# Print the numer of faces trained and end program
-print("\n [INFO] {0} faces trained. Exiting Program".format(len(np.unique(ids))))
+recognizer.train(x_train, np.array(y_labels))
+recognizer.write("recognizers/face-trainner.yml")
