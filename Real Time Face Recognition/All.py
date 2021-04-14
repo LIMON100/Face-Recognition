@@ -7,6 +7,7 @@ Created on Mon Apr 12 15:21:41 2021
 
 import cv2
 import numpy as np
+from PIL import Image
 import os 
 import pickle
 
@@ -30,7 +31,7 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 
 #iniciate id counter
 id = 0
-
+p = 0
 
 # Initialize and start realtime video capture
 cam = cv2.VideoCapture(0)
@@ -42,15 +43,15 @@ cam.set(4, 480) # set video height
 minW = 0.1*cam.get(3)
 minH = 0.1*cam.get(4)
 
-p = 2
 
 current_id = 0
 label_ids = {}
 y_labels = []
 x_train = []
+a = []
 
 
-def train_dat():
+def train_data():
     
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     image_dir = os.path.join(BASE_DIR, 'new_dataset')
@@ -85,12 +86,12 @@ def train_dat():
                     y_labels.append(id_)
                     
                     
-    with open("pickles/face-label.pickle", "wb") as f:
+    with open("pickles/face-labels.pickle", "wb") as f:
         pickle.dump(label_ids, f)
     
 
     recognizer.train(x_train, np.array(y_labels))
-    recognized.write("recognizer/face-trainner.yml")
+    recognizer.write("recognizer/face-trainner.yml")
 
 
 
@@ -98,25 +99,23 @@ def train_dat():
 def make_dataset(img):
     
     count = 0
-    p = 2
+    
+    a.append(p)
+    b = a[-1]
       
-    dir_n = "new_dataset/person" + str(p)
+    dir_n = "new_dataset/person" + str(b)
     os.mkdir(dir_n)
     img_count = 1
     
     while(True):
         
         rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        faces = face_detector.detectMultiScale(rgb, 1.3, 5)
+        faces = faceCascade.detectMultiScale(rgb, 1.3, 5)
     
         for (x,y,w,h) in faces:
     
             cv2.rectangle(img, (x,y), (x+w,y+h), (255,0,0), 2)     
             count += 1
-        
-            
-            #createFolder('./dataset/')
-            # Save the captured image into the datasets folder
             
             #os.mkdir(pathn)
             #pathn = os.makedirs(os.path.join('subfolder' + str(p)))
@@ -130,10 +129,11 @@ def make_dataset(img):
         
         if k == 27:
             break
-        elif count >= 25: 
-             break
+        elif count >= 25:
+            p = P + 1
+            a.append(p)
+            break
     
-    p = p + 1
     
     train_data()
 
@@ -142,18 +142,18 @@ while True:
 
     ret, img = cam.read()
 
-    gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    
+    flag = 1
     faces = faceCascade.detectMultiScale( 
         gray,
         scaleFactor = 1.2,
         minNeighbors = 5,
-        minSize = (int(minW), int(minH)),
+        minSize = (int(minW), int(minH))
        )
 
     for(x, y, w, h) in faces:
         
-        flag = 1
 
         cv2.rectangle(img, (x,y), (x+w,y+h), (0,255,0), 2)
 
@@ -188,7 +188,6 @@ while True:
     if k == 27:
         break
 
-# Do a bit of cleanup
-print("\n [INFO] Exiting Program and cleanup stuff")
+
 cam.release()
 cv2.destroyAllWindows()
