@@ -5,7 +5,7 @@ Created on Wed Apr 21 12:22:00 2021
 @author: limon
 """
 
-from camera import CameraStream
+#from camera import CameraStream
 import socket,cv2, pickle,struct
 import pyshine as ps # pip install pyshine
 import imutils # pip install imutils
@@ -13,12 +13,30 @@ camera = True
 
 #rtsp://admin:Experts@2021!@@24.186.96.191:554/ch01/0
 #"http://158.58.130.148:80/mjpg/video.mjpg"
-vid = cv2.VideoCapture("rtsp://admin:Experts@2021!@@24.186.96.191:554/ch01/0")
+#vid = cv2.VideoCapture("rtsp://admin:Experts@2021!@@24.186.96.191:554/ch01/0")
 
 
 ## Check with another camera stream
 
 #vid = CameraStream().start()
+
+
+def fnu_rtsp():
+
+    user_name = input('Enter Username: ')
+    passwrd = input('Enter Password: ')
+    ip_address = input('Enter IP_Address: ')
+    port = input('Enter Port: ')
+    channel = input('Enter Channel: ')
+    
+    new_url = "rtsp://" + user_name + ":" + passwrd + "@" + ip_address + ":" + port + "/" + "ch01" + "/" + channel
+    #print(new_url)
+    
+    video = cv2.VideoCapture(new_url)
+    return video
+
+
+vid = fnu_rtsp()
 
 
 client_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
