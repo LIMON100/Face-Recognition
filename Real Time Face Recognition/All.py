@@ -31,7 +31,9 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 
 #iniciate id counter
 id = 0
+global p
 p = 0
+#q = 0
 
 # Initialize and start realtime video capture
 cam = cv2.VideoCapture(0)
@@ -50,6 +52,7 @@ y_labels = []
 x_train = []
 a = []
 
+a.append(p)
 
 def train_data():
     
@@ -98,10 +101,14 @@ def train_data():
 
 def make_dataset(img):
     
+    #p = q
     count = 0
+    global p
     
-    a.append(p)
-    b = a[-1]
+    #a.append(p)
+    b = a[-1] + 12
+    #b = p
+    #print(b)
       
     dir_n = "new_dataset/person" + str(b)
     os.mkdir(dir_n)
@@ -126,16 +133,20 @@ def make_dataset(img):
     
         k = cv2.waitKey(100) & 0xff # Press 'ESC' for exiting video
         img_count += 1
+        #p = p + 1
         
         if k == 27:
             break
         elif count >= 25:
-            p = P + 1
+            p = p + 1
             a.append(p)
             break
     
-    
-    train_data()
+    #a.append(p)
+    #p = p + 1
+    #q = p
+    #a.append(p)
+    #train_data()
 
 
 while True:
@@ -144,17 +155,19 @@ while True:
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     
-    flag = 1
+    #flag = 1
     faces = faceCascade.detectMultiScale( 
         gray,
         scaleFactor = 1.2,
         minNeighbors = 5,
         minSize = (int(minW), int(minH))
        )
-
+    
+    #cv2.imshow("img2", img)
+    #flag = 0
     for(x, y, w, h) in faces:
         
-
+        flag = 0
         cv2.rectangle(img, (x,y), (x+w,y+h), (0,255,0), 2)
 
         #id, confidence = recognizer.predict(gray[y:y+h,x:x+w])
@@ -169,14 +182,17 @@ while True:
             ##check if the face is in the dataset
             for key, value in labels.items():
                 if names != value:
-                    flag = 0
+                    flag = 1
+                    #make_dataset(img)
             
             ## If face not match then it take snapshot and tranining
-            if flag == 0:
+            if flag == 1:
                 make_dataset(img)
-            
+                
             else:
                 cv2.putText(img, str(names), (x+5,y-5), font, 1, (255,255,255), 2)
+            
+            #cv2.putText(img, str(names), (x+5,y-5), font, 1, (255,255,255), 2)
         
         
         #cv2.putText(img, str(names), (x+5,y-5), font, 1, (255,255,255), 2)
