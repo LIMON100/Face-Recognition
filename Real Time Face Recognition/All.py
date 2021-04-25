@@ -18,13 +18,6 @@ eye_cascade = cv2.CascadeClassifier('I:/1.232 Pora/ALL Projects/Face Detection/w
 
 recognizer = cv2.face.LBPHFaceRecognizer_create()
 #recognizer.read("./recognizers/face-trainner.yml")
-recognizer.read("I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/All in/recognizers/face-trainner.yml")
-
-labels = {"person_name": 1}
-with open("I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/All in/pickles/face-labels.pickle", 'rb') as f:
-	og_labels = pickle.load(f)
-	labels = {v:k for k,v in og_labels.items()}
-
 
 
 font = cv2.FONT_HERSHEY_SIMPLEX
@@ -96,6 +89,7 @@ def train_data():
                 final_image = pil_image.resize(size, Image.ANTIALIAS)
                 image_array = np.array(final_image, "uint8")
                 
+                print("Collect Face............")
                 faces - faceCascade.detectMultiScale(image_array)
                 
                 for (x, y, w, h) in faces:
@@ -163,7 +157,7 @@ def make_dataset(img):
     
             cv2.imshow('image', img)
     
-        k = cv2.waitKey(60) & 0xff # Press 'ESC' for exiting video
+        k = cv2.waitKey(100) & 0xff # Press 'ESC' for exiting video
         img_count += 1
         #p = p + 1
         
@@ -178,7 +172,6 @@ def make_dataset(img):
             f.write(str(save_value))
             f.write("\n")
             f.close()
-            
             break
     
     
@@ -232,32 +225,36 @@ while True:
         
         # Check confidence
     
-     
-        if conf > 40 and conf <= 85:
+        if conf > 0:
+            
             print("Inside confidence..........................")
             print("\n")
-            #id = names[id]
-            names = labels[id_]
-
-            cv2.putText(img, str(names), (x+5,y-5), font, 1, (255,255,255), 2)
-            cv2.putText(img, str(conf), (x+5,y+h-5), font, 1, (255,255,0), 1)  
             
-        
-        elif conf > 100:
-            print("0 Inside")
-            make_dataset(img)
+            if conf > 40 and conf <= 85:
+                print("Inside face confidence..........................")
+                print("\n")
+                #id = names[id]
+                names = labels[id_]
+    
+                cv2.putText(img, str(names), (x+5,y-5), font, 1, (255,255,255), 2)
+                cv2.putText(img, str(conf), (x+5,y+h-5), font, 1, (255,255,0), 1)  
+            
+            else:
+                print("Non-confidence......................")
+                make_dataset(img)
+                
             
         #else:
             #make_dataset(img)
         
-        print("Not any inside//////////////////////")
+        print("Not inside//////////////////////")
         
         #cv2.putText(img, str(names), (x+5,y-5), font, 1, (255,255,255), 2)
         #cv2.putText(img, str(confidence), (x+5,y+h-5), font, 1, (255,255,0), 1)  
     
     cv2.imshow('camera',img) 
     
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    if cv2.waitKey(20) & 0xFF == ord('q'):
         break
     #k = cv2.waitKey(10) & 0xff # Press 'ESC' for exiting video
     #if k == 27:
