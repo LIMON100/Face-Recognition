@@ -12,16 +12,16 @@ import os
 import pickle
 
 
-faceCascade = cv2.CascadeClassifier('cascades/data/haarcascade_frontalface_alt2.xml')
-eye_cascade = cv2.CascadeClassifier('cascades/data/haarcascade_eye.xml')
+faceCascade = cv2.CascadeClassifier('I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/All in/cascades/data/haarcascade_frontalface_alt2.xml')
+eye_cascade = cv2.CascadeClassifier('I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/All in/cascades/data/haarcascade_eye.xml')
 
 
 recognizer = cv2.face.LBPHFaceRecognizer_create()
-recognizer.read("./recognizers/face-trainner.yml")
-
+#recognizer.read("./recognizers/face-trainner.yml")
+recognizer.read("I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/All in/recognizers/face-trainner.yml")
 
 labels = {"person_name": 1}
-with open("pickles/face-labels.pickle", 'rb') as f:
+with open("I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/All in/pickles/face-labels.pickle", 'rb') as f:
 	og_labels = pickle.load(f)
 	labels = {v:k for k,v in og_labels.items()}
 
@@ -33,7 +33,7 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 id = 0
 global p
 p = 0
-#q = 0
+save_value = 0
 
 # Initialize and start realtime video capture
 cam = cv2.VideoCapture(0)
@@ -54,7 +54,22 @@ a = []
 
 a.append(p)
 
+f= open("ltest.txt","a")
+
+f.write(str(p))
+f.write("\n")
+f.close()
+
+
 def train_data():
+    
+    print("Start Trining...............................")
+    
+    global current_id
+    global label_ids
+    global y_labels
+    global x_train
+    global a
     
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     image_dir = os.path.join(BASE_DIR, 'new_dataset')
@@ -88,31 +103,48 @@ def train_data():
                     x_train.append(roi)
                     y_labels.append(id_)
                     
-                    
+    
+    print("Saving class names.......................")
+    print("\n")
     with open("pickles/face-labels.pickle", "wb") as f:
         pickle.dump(label_ids, f)
     
-
+    
+    print("Save file to yml..........................")
+    print("\n")
     recognizer.train(x_train, np.array(y_labels))
-    recognizer.write("recognizer/face-trainner.yml")
+    recognizer.write("recognizers/face-trainner.yml")
+    
+    print("Finish Training--------------------------")
+    print("\n")
 
 
 
 
 def make_dataset(img):
     
+    
+    print("Make New Dataset.......................")
+    
     #p = q
     count = 0
     global p
+    global save_value
     
     #a.append(p)
     b = a[-1] + 12
     #b = p
     #print(b)
       
-    dir_n = "new_dataset/person" + str(b)
+    dir_n = "I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/All in/new_dataset/person" + str(b)
     os.mkdir(dir_n)
     img_count = 1
+    
+    with open("ltest.txt", "r") as fp:
+        lines = fp.readlines()
+        end = lines[-1].split(',')[0]
+    
+    save_value = end
     
     while(True):
         
@@ -131,7 +163,7 @@ def make_dataset(img):
     
             cv2.imshow('image', img)
     
-        k = cv2.waitKey(100) & 0xff # Press 'ESC' for exiting video
+        k = cv2.waitKey(60) & 0xff # Press 'ESC' for exiting video
         img_count += 1
         #p = p + 1
         
@@ -140,13 +172,27 @@ def make_dataset(img):
         elif count >= 25:
             p = p + 1
             a.append(p)
+            
+            f = open("ltest.txt", "a")
+            save_value = int(save_value) + 1
+            f.write(str(save_value))
+            f.write("\n")
+            f.close()
+            
             break
     
+    
+    print("Complete Making Dataset.....................")
+    #cam.release()
     #a.append(p)
     #p = p + 1
     #q = p
     #a.append(p)
-    #train_data()
+    print("Goes to Training")
+    print("\n")
+    #cam.release()
+    #cv2.destroyAllWindows()
+    train_data()
 
 
 while True:
@@ -163,6 +209,15 @@ while True:
         minSize = (int(minW), int(minH))
        )
     
+    recognizer.read("I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/All in/recognizers/face-trainner.yml")
+
+
+    labels = {"person_name": 1}
+    with open("I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/All in/pickles/face-labels.pickle", 'rb') as f:
+    	og_labels = pickle.load(f)
+    	labels = {v:k for k,v in og_labels.items()}
+
+    
     #cv2.imshow("img2", img)
     #flag = 0
     for(x, y, w, h) in faces:
@@ -173,36 +228,40 @@ while True:
         #id, confidence = recognizer.predict(gray[y:y+h,x:x+w])
         
         id_, conf = recognizer.predict(gray[y:y+h, x:x+w])
-
+        
+        
         # Check confidence
-        if conf > 4 and conf <= 85:
+    
+     
+        if conf > 40 and conf <= 85:
+            print("Inside confidence..........................")
+            print("\n")
             #id = names[id]
             names = labels[id_]
+
+            cv2.putText(img, str(names), (x+5,y-5), font, 1, (255,255,255), 2)
+            cv2.putText(img, str(conf), (x+5,y+h-5), font, 1, (255,255,0), 1)  
             
-            ##check if the face is in the dataset
-            for key, value in labels.items():
-                if names != value:
-                    flag = 1
-                    #make_dataset(img)
-            
-            ## If face not match then it take snapshot and tranining
-            if flag == 1:
-                make_dataset(img)
-                
-            else:
-                cv2.putText(img, str(names), (x+5,y-5), font, 1, (255,255,255), 2)
-            
-            #cv2.putText(img, str(names), (x+5,y-5), font, 1, (255,255,255), 2)
         
+        elif conf > 100:
+            print("0 Inside")
+            make_dataset(img)
+            
+        #else:
+            #make_dataset(img)
+        
+        print("Not any inside//////////////////////")
         
         #cv2.putText(img, str(names), (x+5,y-5), font, 1, (255,255,255), 2)
         #cv2.putText(img, str(confidence), (x+5,y+h-5), font, 1, (255,255,0), 1)  
     
     cv2.imshow('camera',img) 
-
-    k = cv2.waitKey(10) & 0xff # Press 'ESC' for exiting video
-    if k == 27:
+    
+    if cv2.waitKey(1) & 0xFF == ord('q'):
         break
+    #k = cv2.waitKey(10) & 0xff # Press 'ESC' for exiting video
+    #if k == 27:
+    #    break
 
 
 cam.release()
