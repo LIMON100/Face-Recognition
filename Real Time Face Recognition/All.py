@@ -13,19 +13,19 @@ import cv2
 import pickle
 import os
 from PIL import Image
+import random
 
 face_cascade = cv2.CascadeClassifier('I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/All in/cascades/data/haarcascade_frontalface_default.xml')
 eye_cascade = cv2.CascadeClassifier('I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/All in/cascades/data//haarcascade_eye.xml')
 
 
 recognizer = cv2.face.LBPHFaceRecognizer_create()
-recognizer.read("I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/recognizers/face-trainner.yml")
-
+recognizer.read("I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/All in/recognizers/face-trainner.yml")
 
 labels = {"person_name": 1}
-with open("I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/pickles/face-labels.pickle", 'rb') as f:
-	og_labels = pickle.load(f)
-	labels = {v:k for k,v in og_labels.items()}
+with open("I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/All in/pickles/face-labels.pickle", 'rb') as f:
+    og_labels = pickle.load(f)
+    labels = {v:k for k,v in og_labels.items()}
     
 font = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -97,14 +97,14 @@ def train_data():
     
     print("Saving class names.......................")
     print("\n")
-    with open("I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/All in/with class/pickles/face-labels.pickle", "wb") as f:
+    with open("I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/All in/pickles/face-labels.pickle", "wb") as f:
         pickle.dump(label_ids, f)
     
     
     print("Save file to yml..........................")
     print("\n")
     recognizer.train(x_train, np.array(y_labels))
-    recognizer.write("I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/All in/with class/recognizers/face-trainner.yml")
+    recognizer.write("I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/All in/recognizers/face-trainner.yml")
     
     print("Finish Training--------------------------")
     print("\n")
@@ -112,65 +112,74 @@ def train_data():
 
 
 
-class MakeDataset:
-    
-    def __init__(self, img):
-        self.count = 0
-        self.img = img
-        self.b = a[-1] + 12
-        self.dir_n = "I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/All in/with class/new_dataset/person" + str(self.b)
-        self.img_count = 1
-        os.mkdir(self.dir_n)
-        self.p = p
-    
+def make_dataset(img):
+
     print("Make New Dataset.......................")
     
     #p = q
-    #count = 0
-    global p
-    global save_value
+    count = 0
+    #global p
+    #global save_value
     
     #a.append(p)
     #b = a[-1] + 12
     #b = p
     #print(b)
-      
-    #os.mkdir(self.dir_n)
-    #img_count = 1
-
     
-    def update_data(self):
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    image_dir = os.path.join(BASE_DIR, 'new_dataset')
+    
+    for path, dirs,files in os.walk(image_dir):
+        a1 = os.path.basename(path)
+     
         
-        while(True):
+    b1 = a1[-1]
+    b1 = (int(b1) + 1) * 2 + random.randint(0, 5555555)
+    b1 = str(b1)
+    
+    dir_n = "I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/All in/new_dataset/p" + str(b1)
+    os.mkdir(dir_n)
+    img_count = 1
+    
+    with open("ltest.txt", "r") as fp:
+        lines = fp.readlines()
+        end = lines[-1].split(',')[0]
+    
+    save_value = end
+    
+    while(True):
         
-            rgb = cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB)
-            faces = face_cascade.detectMultiScale(rgb, 1.3, 5)
-        
-            for (x,y,w,h) in faces:
-        
-                cv2.rectangle(self.img, (x,y), (x+w,y+h), (255,0,0), 2)     
-                self.count += 1
-                
-                cv2.imwrite(self.dir_n + f"\image{self.img_count}.jpg", rgb[y:y+h,x:x+w])
-        
-                #cv2.imshow('image', img)
-        
-            k = cv2.waitKey(100) & 0xff # Press 'ESC' for exiting video
-            self.img_count += 1
-            #p = p + 1
+        rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        faces = face_cascade.detectMultiScale(rgb, 1.3, 5)
+    
+        for (x,y,w,h) in faces:
+    
+            cv2.rectangle(img, (x,y), (x+w,y+h), (255,0,0), 2)     
+            count += 1
             
-            if k == 27:
-                break
-            elif self.count >= 25:
-                self.p = self.p + 1
-                a.append(self.p)
-                break
+            #os.mkdir(pathn)
+            #pathn = os.makedirs(os.path.join('subfolder' + str(p)))
+            #cv2.imwrite(pathn + str(face_id) + '.' + str(count) + ".jpg", rgb[y:y+h,x:x+w])
+            cv2.imwrite(dir_n + f"\image{img_count}.jpg", rgb[y:y+h,x:x+w])
+    
+            #cv2.imshow('image', img)
+    
+        k = cv2.waitKey(100) & 0xff # Press 'ESC' for exiting video
+        img_count += 1
+        #p = p + 1
+        
+        if k == 27:
+            break
+        elif count >= 25:
+            #p = p + 1
+            #a.append(p)
+            break
     
     
     print("Complete Making Dataset.....................")
     print("Goes to Training")
     print("\n")
-    #train_data()
+    train_data()
 
 
 class VideoStreamWidget(object):
@@ -186,7 +195,14 @@ class VideoStreamWidget(object):
         self.minH = 0.1*self.capture.get(4)
         self.thread.daemon = True
         self.thread.start()
-        
+    
+    
+        recognizer.read("I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/All in/recognizers/face-trainner.yml")
+        #labels = {"person_name": 1}
+        with open("I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/All in/pickles/face-labels.pickle", 'rb') as f:
+                og_labels = pickle.load(f)
+                self.labels = {v:k for k,v in og_labels.items()}
+
 
     def update(self):
         # Read the next frame from the stream in a different thread
@@ -223,16 +239,14 @@ class VideoStreamWidget(object):
                             print("Inside face confidence..........................")
                             print("\n")
                             #id = names[id]
-                            self.names = labels[self.id_]
+                            self.names = self.labels[self.id_]
                 
                             cv2.putText(self.frame, str(self.names), (x+5,y-5), font, 1, (255,255,255), 2)
                             #cv2.putText(img, str(conf), (x+5,y+h-5), font, 1, (255,255,0), 1)  
                         
                         else:
                             print("Non-confidence......................")
-                            md = MakeDataset(self.frame)
-                            md.update_data()
-                            train_data()
+                            make_dataset(self.frame)
                             
                         
                     #else:
