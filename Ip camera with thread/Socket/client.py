@@ -11,9 +11,9 @@ import pyshine as ps # pip install pyshine
 import imutils # pip install imutils
 camera = True
 
-#rtsp://admin:Experts@2021!@@24.186.96.191:554/ch01/0
+#rtsp://admin:Experts@202@24.186.96.191:554/ch01/0
 #"http://158.58.130.148:80/mjpg/video.mjpg"
-#vid = cv2.VideoCapture("rtsp://admin:Experts@2021!@@24.186.96.191:554/ch01/0")
+#vid = cv2.VideoCapture("rtsp://admin:Experts@!@@24.186.96.191:554/ch01/0")
 
 
 ## Check with another camera stream
@@ -40,7 +40,7 @@ vid = fnu_rtsp()
 
 
 client_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-host_ip = '192.168.56.1' #192.168.0.103
+host_ip = 'local_ip' 
 
 port = 9999
 client_socket.connect((host_ip, port))
