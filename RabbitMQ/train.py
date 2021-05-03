@@ -54,23 +54,10 @@ class TraningData():
         self.tem = self.channel.queue_declare(queue = self.server.queue)
         print("Server started waiting for Messages ")
         
-        
-    def callback(ch, method, properties, body):
-        print("Received Message")
-
-    
-    def startserver(self):
-        self.channel.basic_consume(
-            queue=self.server.queue,
-            on_message_callback=TraningData.callback,
-            auto_ack=True)
-        self.channel.start_consuming()
     
     def train_data(self):
-        
+
         print("Start Training...............................")
-        
-        #(self.rpiName, self.frame) = imageHub.recv_image()
         
         global current_id
         global label_ids
@@ -125,11 +112,30 @@ class TraningData():
         
         print("Finish Training--------------------------")
         print("\n")
+             
+        
+    
+    def callback(ch, method, properties, body):
+        #print(TraningData.train_data)
+        TraningData.train_data
+        print("Received M....")
+        
+        
+    def startserver(self):
+        self.channel.basic_consume(
+                queue=self.server.queue,
+                on_message_callback=TraningData.callback,
+                auto_ack=True)
+     
+        self.channel.start_consuming()
+
         
 
 
 if __name__ == "__main__":
     
     serverconfigure = RabbitMqServerConfigure(host='localhost', queue='hello')
-    server = TraningData(server=serverconfigure)
-    server.startserver()
+    server = TraningData(server = serverconfigure)
+    #server.startserver()
+    server.train_data()
+    #server.train_data()
