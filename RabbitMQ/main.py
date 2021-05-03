@@ -84,12 +84,10 @@ class VideoStreamWidget(object):
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue = self.queue)
         
-        self.channel.basic_publish(exchange=self.exchange,
-                      routing_key=self.routingKey,
-                      body="SENT ITEM")
+        #self.channel.basic_publish(exchange=self.exchange, routing_key=self.routingKey, body="SENT ITEM")
 
-        print("Published Message:")
-        self.connection.close()
+        #print("Published Message:")
+        #self.connection.close()
         
         self.thread = Thread(target=self.update, args=())
         self.minW = 0.1*self.capture.get(3)
@@ -194,7 +192,10 @@ class VideoStreamWidget(object):
                                 elif count >= 3:
                                     break
                             
-                            
+                            self.channel.basic_publish(exchange = self.exchange, routing_key = self.routingKey, body="SENT ITEM")
+
+                            print("Published Message:")
+                            #self.connection.close()
                             #connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
                             #channel = connection.channel()
                             
@@ -219,10 +220,12 @@ class VideoStreamWidget(object):
     def show_frame(self):
         # Display frames in main program
         cv2.imshow('frame', self.frame)
+        
         key = cv2.waitKey(1)
         if key == ord('q'):
             self.capture.release()
             cv2.destroyAllWindows()
+            self.connection.close()
             exit(0)
             
 
