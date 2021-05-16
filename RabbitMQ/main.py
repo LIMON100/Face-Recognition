@@ -46,13 +46,13 @@ y_labels = []
 x_train = []
 a = []
 
-a.append(p)
+#a.append(p)
 
-f= open("ltest.txt","a")
+#f= open("ltest.txt","a")
 
-f.write(str(p))
-f.write("\n")
-f.close()
+#f.write(str(p))
+#f.write("\n")
+#f.close()
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
