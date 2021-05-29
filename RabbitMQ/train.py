@@ -18,6 +18,9 @@ import imagezmq
 
 import pika, sys, os
 
+
+## Collect face pretrained model
+
 face_cascade = cv2.CascadeClassifier('I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/RabbitMq/with2/cascades/data/haarcascade_frontalface_default.xml')
 eye_cascade = cv2.CascadeClassifier('I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/RabbitMq/with2/cascades/data//haarcascade_eye.xml')
 
@@ -47,14 +50,18 @@ class RabbitMqServerConfigure():
 class TraningData():
     
     def __init__(self, server):
-
+        
+        ## Established Connection
+        
         self.server = server
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host = self.server.host))
         self.channel = self.connection.channel()
         self.tem = self.channel.queue_declare(queue = self.server.queue)
         print("Server started waiting for Messages ")
 
-
+    
+    ## Start training
+        
     def callback(ch, method, properties, body):
         #print(TraningData.train_data)
         print("Start Training...............................")
@@ -98,12 +105,14 @@ class TraningData():
                         x_train.append(roi)
                         y_labels.append(id_)
                         
+        ## Saving new class name
         
         print("Saving class names.......................")
         print("\n")
         with open("I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/RabbitMq/with2/pickles/face-labels.pickle", "wb") as f:
             pickle.dump(label_ids, f)
         
+        ## Saving new trained model.
         
         print("Save file to yml..........................")
         print("\n")
@@ -114,6 +123,9 @@ class TraningData():
         print("\n")
         print("Received M....")
         
+    
+    
+    ## Start receiving message from sender
         
     def startserver(self):
         self.channel.basic_consume(
@@ -128,8 +140,7 @@ class TraningData():
 
 if __name__ == "__main__":
     
-    serverconfigure = RabbitMqServerConfigure(host='localhost', queue='hello')
+    ## Established connection 
+    serverconfigure = RabbitMqServerConfigure(host = 'localhost', queue = 'hello')
     server = TraningData(server = serverconfigure)
     server.startserver()
-    #server.train_data()
-    #server.train_data()
