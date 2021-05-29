@@ -20,12 +20,18 @@ import argparse
 import pika
 
 
+## Collect face model
+
 face_cascade = cv2.CascadeClassifier('I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/RabbitMq/with2/cascades/data/haarcascade_frontalface_default.xml')
 eye_cascade = cv2.CascadeClassifier('I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/RabbitMq/with2/cascades/data//haarcascade_eye.xml')
 
+## Call LBP algorithm and read the trained model
 
 recognizer = cv2.face.LBPHFaceRecognizer_create()
 recognizer.read("I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/RabbitMq/with2/recognizers/face-trainner.yml")
+
+
+## Collecting the labels
 
 labels = {"person_name": 1}
 with open("I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/RabbitMq/with2/pickles/face-labels.pickle", 'rb') as f:
@@ -46,13 +52,6 @@ y_labels = []
 x_train = []
 a = []
 
-#a.append(p)
-
-#f= open("ltest.txt","a")
-
-#f.write(str(p))
-#f.write("\n")
-#f.close()
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -63,10 +62,16 @@ class VideoStreamWidget(object):
     
     def __init__(self, src = 0, width = 640, height = 480, queue='hello', host='localhost', routingKey='hello', exchange=''):
         
+        ## Call which way to collect data
+        
         self.capture = cv2.VideoCapture(src)
+        
         # Start the thread to read frames from the video stream
         self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+        
+        
+        ## Eastablish RabbitMQ Connection
         
         self.queue = queue
         self.host = host
@@ -82,11 +87,17 @@ class VideoStreamWidget(object):
         #print("Published Message:")
         #self.connection.close()
         
+        
+        ## Start Thread
+        
         self.thread = Thread(target=self.update, args=())
         self.minW = 0.1*self.capture.get(3)
         self.minH = 0.1*self.capture.get(4)
         self.thread.daemon = True
         self.thread.start()
+        
+        
+        ## Read the Class names and trained model
         
         recognizer.read("I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/RabbitMq/with2/recognizers/face-trainner.yml")
         labels = {"person_name": 1}
@@ -95,6 +106,9 @@ class VideoStreamWidget(object):
                 labels = {v:k for k,v in og_labels.items()}
         
     
+    
+    ## Start reading frame
+                
     def update(self):
         # Read the next frame from the stream in a different thread
         while True:
@@ -119,8 +133,8 @@ class VideoStreamWidget(object):
                     self.id_, self.conf = recognizer.predict(self.gray[y:y+h, x:x+w])
                     
                     
-                    # Check confidence
-                
+                    # Check confidence and if matchd any face show the class name.
+                    
                     if self.conf > 0:
                         
                         print("Inside confidence..........................")
@@ -136,20 +150,16 @@ class VideoStreamWidget(object):
                             cv2.putText(self.frame, str(self.names), (x+5,y-5), font, 1, (255,255,255), 2)
                             #cv2.putText(img, str(conf), (x+5,y+h-5), font, 1, (255,255,0), 1)  
                         
+                        
+                        ## If unknown then collect dataset.
+                            
                         else:
                             print("Non-confidence......................")
-                            #cv2.rectangle(self.frame, (x,y), (x+w,y+h), (128,0,0), 2)
-                            #md = makeData.MakeDataset(self.frame)
-                            #md.update_data()
-                            
-                            
+                         
                             count = 0
                             img_count = 1
                            
-                   
                             result = []
-                            
-                            #mypath = "I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/All in/cvs/video_dataset"
                     
                             for root, dirs,files in os.walk(image_dir):
                                 for file in files:
@@ -164,9 +174,6 @@ class VideoStreamWidget(object):
                             
                             dir_n = "I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/RabbitMq/with2/new_dataset/p" + str(b1)
                             os.mkdir(dir_n)
-                            
-                            #c1 = str(self.b1)
-                            #self.cam = cv2.VideoCapture("I:/1.232 Pora/ALL Projects/Face Detection/with real training/lmn try all face/All in/cvs/video_dataset" + f"\p{self.c1}.mp4")
                         
                             print("Make New Dataset.......................")
                             
@@ -185,26 +192,12 @@ class VideoStreamWidget(object):
                                 elif count >= 30:
                                     break
                             
+                            ## Send messages for training images
+                                
                             self.channel.basic_publish(exchange = self.exchange, routing_key = self.routingKey, body="SENT ITEM")
 
                             print("Published Message:")
-                            #self.connection.close()
-                            #connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
-                            #channel = connection.channel()
-                            
-                            #channel.queue_declare(queue='hello')
-                            
-                            #channel.basic_publish(exchange='', routing_key='hello', body='Hello World!')
-                            #print("[x] Sent 'Hello World!'")
-                            #connection.close()
-                            #sender.send_image(rpiName, self.frame)
-                            #td = train2.TraningData()
-                            #td.train_data()
-                            
-                   
-                        #td = train2.TraningData()
-                        #td.train_data()
-                            #md.train_data()
+                        
                             
                 print("Not inside//////////////////////")
                 
