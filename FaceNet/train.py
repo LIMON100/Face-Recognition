@@ -3,39 +3,36 @@ import numpy as np
 
 class Classification():
 
-    def __init__(self, para_dict):
-
-        ## __var parsing
+    def __init__(self,para_dict):
+        #----var parsing
         train_img_dir = para_dict['train_img_dir']
         test_img_dir = para_dict['test_img_dir']
         label_dict = para_dict['label_dict']
 
-
-        ## __get label names
+        #----get label names to number dictionary
         if label_dict is None:
             label_dict = self.__get_label_dict(train_img_dir)
             print(label_dict)
 
 
-        ## __get training path
-        train_paths, train_labels = self.__get_paths_labels(train_img_dir, label_dict)
-        print("train path shape:{}, train label shape:{}".format(train_paths.shape, train_labels.shape))
+        #----read training set paths and labels
+        train_paths, train_labels = self.__get_paths_labels(train_img_dir,label_dict)
+        print("train path shape:{}, train label shape:{}".format(train_paths.shape,train_labels.shape))
 
-        ## __get testing path
+        #----read test set paths and labels
         if test_img_dir is not None:
-            test_paths, test_labels = self.__get_paths_labels(test_img_dir, label_dict)
-            print("test path shape: {}, train label shape: {}".format(test_paths.shape, train_labels.shape))
+            test_paths, test_labels = self.__get_paths_labels(test_img_dir,label_dict)
+            print("test path shape:{}, test label shape:{}".format(test_paths.shape, test_labels.shape))
 
-
-        ## convet local to global
+        #----local var to global
         self.train_img_dir = train_img_dir
         self.label_dict = label_dict
-        self.train_path = train_path
+        self.train_paths = train_paths
         self.train_labels = train_labels
 
         if test_img_dir is not None:
             self.test_img_dir = test_img_dir
-            self.test_path = test_path
+            self.test_paths = test_paths
             self.test_labels = test_labels
 
 
@@ -74,6 +71,7 @@ class Classification():
                     #----get the label number from class name
                     label_num = dir_path.split("\\")[-1]
                     label_num = label_dict[label_num]
+
                     #----create the label array
                     label_temp = np.ones(len(path_temp), dtype=np.int32) * label_num
 
@@ -98,8 +96,8 @@ class Classification():
 
 
 if __name__ == "__main__":
-    train_img_dir = r"H:\dataset\sub1"
-    test_img_dir = r"H:\dataset\sub2"
+    train_img_dir = r"H:\Android\New 7\Masked_face\Deep Learning masked face detection, recognition\5. Tensorflow introduction and quick guide\train"
+    test_img_dir = r"H:\Android\New 7\Masked_face\Deep Learning masked face detection, recognition\5. Tensorflow introduction and quick guide\val"
     label_dict = 'home'
 
     para_dict = {"train_img_dir":train_img_dir, "test_img_dir":test_img_dir, "label_dict":label_dict}
