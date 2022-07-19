@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import tensorflow as tf
 
 class Classification():
 
@@ -12,7 +13,7 @@ class Classification():
         #----get label names to number dictionary
         if label_dict is None:
             label_dict = self.__get_label_dict(train_img_dir)
-            print(label_dict)
+            #print(label_dict)
 
 
         #----read training set paths and labels
@@ -34,6 +35,30 @@ class Classification():
             self.test_img_dir = test_img_dir
             self.test_paths = test_paths
             self.test_labels = test_labels
+
+
+    def model_init(self, para_dict):
+
+        ##--var pasrsing
+        model_shape = para_dict['model_shape']
+        infer_method = para_dict['infer_method']
+        loss_method = para_dict['loss_method']
+        opti_method = para_dict['opti_method']
+
+        ##--tf placeholder declaration
+        tf_input = tf.placeholder(shape=model_shape, dtype=tf.float32, name='input')
+
+
+        ##--inference section
+        if infer_method == "":
+            output = self.simple_resnet(tf_input)
+
+
+        ##--loss section
+
+
+
+        ##--optimizer section
 
 
 
@@ -92,13 +117,10 @@ class Classification():
 
 
 
-
-
-
 if __name__ == "__main__":
     train_img_dir = r"H:\Android\New 7\Masked_face\Deep Learning masked face detection, recognition\5. Tensorflow introduction and quick guide\train"
     test_img_dir = r"H:\Android\New 7\Masked_face\Deep Learning masked face detection, recognition\5. Tensorflow introduction and quick guide\val"
-    label_dict = 'home'
+    label_dict = None
 
     para_dict = {"train_img_dir":train_img_dir, "test_img_dir":test_img_dir, "label_dict":label_dict}
 
