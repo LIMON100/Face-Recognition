@@ -116,6 +116,44 @@ class Classification():
         return re_paths, re_labels
 
 
+    ##--models
+    def resnet_block(self, input_x, k_size=2, filters=32):
+        net = tf.layers.conv2D(
+            input = input_x,
+            filters = filters,
+            kernel_size = k_size,
+            kernel_regularizer = tf.contrib.layers.l2.regularizer(scale=0.1),
+            padding = 'same',
+            activation = tf.nn.relu
+        )
+
+        net = tf.layers.conv2D(
+            input=net,
+            filters=filters,
+            kernel_size=k_size,
+            kernel_regularizer=tf.contrib.layers.l2.regularizer(scale=0.1),
+            padding='same',
+            activation=tf.nn.relu
+        )
+
+        net_1 = tf.layers.conv2D(
+            input=input_x,
+            filters=filters,
+            kernel_size=k_size,
+            kernel_regularizer=tf.contrib.layers.l2.regularizer(scale=0.1),
+            padding='same',
+            activation=tf.nn.relu
+        )
+
+        add = tf.add(net, net_1)
+        add_result = tf.nn.relu(add)
+
+        return add_result
+
+    def simple_resnet(self):
+        pass
+
+
 
 if __name__ == "__main__":
     train_img_dir = r"H:\Android\New 7\Masked_face\Deep Learning masked face detection, recognition\5. Tensorflow introduction and quick guide\train"
