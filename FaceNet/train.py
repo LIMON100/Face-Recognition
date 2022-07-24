@@ -76,6 +76,7 @@ class Classification():
         else:
             return label_dict
 
+
     def __get_paths_labels(self,img_dir,label_dict):
         #----var
         img_format = {'png', 'jpg', 'bmp'}
@@ -150,8 +151,45 @@ class Classification():
 
         return add_result
 
-    def simple_resnet(self):
-        pass
+
+    def simple_resnet(self, tf_input, tf_keep_prob, class_name):
+        net = self.resnet_block(tf_input, k_size = 3, filters = 16)
+        net = tf.layers.max_pooling2D(input = net, pool_size = [2,2], strides = 2)
+        print("Pool 1:shape", net.shape)
+
+        net = self.resnet_block(net, k_size=3, filters=32)
+        net = tf.layers.max_pooling2D(input=net, pool_size=[2, 2], strides=2)
+        print("Pool 2:shape", net.shape)
+
+        net = self.resnet_block(net, k_size=3, filters=48)
+        net = tf.layers.max_pooling2D(input=net, pool_size=[2, 2], strides=2)
+        print("Pool 3:shape", net.shape)
+
+        net = self.resnet_block(net, k_size=3, filters=64)
+        net = tf.layers.max_pooling2D(input=net, pool_size=[2, 2], strides=2)
+        print("Pool 4:shape", net.shape)
+
+
+        ##--flatten
+        net = tf.layers.flatten(net)
+        print("Flatten", net.shape)
+
+
+        ##--dropout
+        net = tf.layers.dropout(net, keep_prob = tf_keep_prob)
+
+
+        ##--Fc
+        net = tf.layers.dense(input = net, units = 128, activation = tf.nn.relu)
+        print("FC", net.shape)
+
+
+        ##--output
+        output = tf.layers.dense(input = net, units = class_num, activation = None)
+        print("FC", output.shape)
+
+
+        return output
 
 
 
