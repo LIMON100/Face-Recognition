@@ -15,21 +15,26 @@ class Classification():
             label_dict = self.__get_label_dict(train_img_dir)
             #print(label_dict)
 
+        class_num = len(label_dict.keys())
+
 
         #----read training set paths and labels
         train_paths, train_labels = self.__get_paths_labels(train_img_dir,label_dict)
         print("train path shape:{}, train label shape:{}".format(train_paths.shape,train_labels.shape))
+
 
         #----read test set paths and labels
         if test_img_dir is not None:
             test_paths, test_labels = self.__get_paths_labels(test_img_dir,label_dict)
             print("test path shape:{}, test label shape:{}".format(test_paths.shape, test_labels.shape))
 
+
         #----local var to global
         self.train_img_dir = train_img_dir
         self.label_dict = label_dict
         self.train_paths = train_paths
         self.train_labels = train_labels
+        self.class_num = class_num
 
         if test_img_dir is not None:
             self.test_img_dir = test_img_dir
@@ -44,22 +49,68 @@ class Classification():
         infer_method = para_dict['infer_method']
         loss_method = para_dict['loss_method']
         opti_method = para_dict['opti_method']
+        learning_rate = para_dict['learning_rate']
+        save_dir = para_dict['save_dir']
 
         ##--tf placeholder declaration
         tf_input = tf.placeholder(shape=model_shape, dtype=tf.float32, name='input')
+        tf_keep_prob = tf.placeholder(dtype=np.float32, name="keep_prob")
+        tf_label_batch = tf.placeholder(shape=[None], dtype=tf.int32, name="label_batch")
 
 
         ##--inference section
         if infer_method == "":
-            output = self.simple_resnet(tf_input)
+            output = self.simple_resnet(tf_input, tf_keep_prob, self.class_num)
 
 
         ##--loss section
-
+        if loss_method == "cross_entropy":
+            prediction = tf.nn.softmax(output, name = "prediction")
+            loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels = tf.label_batch, logits = output),
+                                  name="loss")
 
 
         ##--optimizer section
+        if opti_method == "adam":
+            optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
 
+
+
+        ##--save model weights(ckpt,pb)
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+
+
+        out_dir_prefix = os.path.join(save_dir, "model")
+        saver = tf.train.saver(max_to_keep = 5)
+
+
+
+        ##--appoint pb model
+        pb_save_path = os.path.join(save_dir, "model_save.pb")
+        pb_save_list = ['prediction']
+
+
+        ##--json file
+        log_path = os.path.join(save_dir, "train_log.json")
+        content = {"train_img_dir":self.train_img_dir, "test_img_dir":self.test_img_dir, "label_dict":self.label_dict}
+
+
+        ##--local to global
+        self.tf_input = tf_input
+        self.tf_keep_prob = tf_keep_prob
+        self.tf_label_batch = tf_label_batch
+        self.optimizer = optimizer
+        self.prediction = prediction
+        self.out_dir_prefix = out_dir_prefix
+        self.saver = saver
+        self.pb_save_path = pb_save_path
+        self.pb_save_list = pb_save_list
+        self.log_path = log_path
+        self.content = content
+        self.save_dir = save_dir
+        self.model_shape = model_shape
+        self.loss = loss
 
 
 
@@ -201,3 +252,15 @@ if __name__ == "__main__":
     para_dict = {"train_img_dir":train_img_dir, "test_img_dir":test_img_dir, "label_dict":label_dict}
 
     cls = Classification(para_dict)
+
+    model_shape = [None, 28, 28, 3]
+    infer_method = "simple_resnet"
+    loss_method = "cross_entropy"
+    opti_method ="adam"
+    learning_rate = 1e-4
+    save_dir = r"H:\Android\New 7\Masked_face\Deep Learning masked face detection, recognition\8. Create FaceNet model\practice\cls_mnist"
+
+    para_dict = {"model_shape":model_shape, "infer_method":infer_method, "loss_method":loss_method, "opti_method":opti_method, 
+                 "learning_rate":learning_rate, "save_dir":save_dir}
+
+    cls.model_init(para_dict)
